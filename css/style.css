@@ -107,6 +107,9 @@ h1 {
 #go-board {
     display: block;
     cursor: pointer;
+    /* 确保canvas有可见尺寸，在JS加载前显示占位 */
+    min-width: 460px;
+    min-height: 460px;
 }
 
 .message {

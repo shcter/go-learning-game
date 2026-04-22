@@ -451,18 +451,32 @@ class GoGame {
 
 // 启动游戏
 function init() {
+    console.log('init() called - starting game initialization');
+    
     try {
-        initBoard();
+        const boardInitialized = initBoard();
+        console.log('initBoard result:', boardInitialized);
+        
+        if (!boardInitialized) {
+            console.error('Board initialization failed!');
+            document.getElementById('message').textContent = '游戏初始化失败，请刷新页面';
+            return;
+        }
+        
         new GoGame();
+        console.log('GoGame instance created successfully');
         console.log('围棋游戏初始化成功');
     } catch (e) {
         console.error('初始化失败:', e);
+        alert('初始化失败: ' + e.message);
     }
 }
 
 // 确保 DOM 加载完成
 if (document.readyState === 'loading') {
+    console.log('DOM still loading, adding DOMContentLoaded listener');
     document.addEventListener('DOMContentLoaded', init);
 } else {
+    console.log('DOM already ready, calling init() directly');
     init();
 }
