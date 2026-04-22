@@ -155,6 +155,50 @@ h1 {
     font-size: 0.9rem;
 }
 
+.move-list {
+    margin-top: 15px;
+    max-height: 120px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.85rem;
+    color: #aaa;
+    text-align: left;
+    display: none;
+}
+
+.move-list.active {
+    display: block;
+}
+
+.move-list .move-item {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.move-list .move-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.move-list .move-item.current {
+    background: #22c55e;
+    color: #fff;
+}
+
+.move-list .move-item.black {
+    color: #fff;
+    background: #333;
+}
+
+.move-list .move-item.white {
+    color: #333;
+    background: #eee;
+}
+
 /* Tutorial Overlay */
 .tutorial-overlay {
     position: fixed;

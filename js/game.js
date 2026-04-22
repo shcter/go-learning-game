@@ -89,6 +89,9 @@ class GoGame {
         if (statsBtn) statsBtn.addEventListener('click', () => this.showStats());
         if (tsumegoBtn) tsumegoBtn.addEventListener('click', () => this.startTsumego());
         
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+        
         this.updateAIButton();
         this.updateReviewButtons();
         this.updateSoundButton();
@@ -144,6 +147,7 @@ class GoGame {
         this.currentPlayer = this.currentPlayer === BLACK ? WHITE : BLACK;
         
         this.updateDisplay();
+        this.updateMoveList();
         redraw();
         this.showMessage('');
         
@@ -207,6 +211,7 @@ class GoGame {
         this.currentGameMoves = Math.max(0, this.currentGameMoves - 2);
         
         this.updateDisplay();
+        this.updateMoveList();
         redraw();
         this.showMessage('已悔棋');
     }
@@ -231,6 +236,7 @@ class GoGame {
         
         this.updateDisplay();
         this.updateReviewButtons();
+        this.updateMoveList();
         redraw();
         this.showMessage('游戏已重新开始');
     }
@@ -486,6 +492,90 @@ class GoGame {
             if (autoPlayBtn) autoPlayBtn.style.display = 'none';
             this.stopAutoPlay();
         }
+    }
+    
+    handleKeyboard(e) {
+        // 忽略当有输入框聚焦时
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        
+        switch(e.key) {
+            case 'u':
+            case 'U':
+                this.undo();
+                break;
+            case 'r':
+            case 'R':
+                if (confirm('确定要重新开始吗？')) this.reset();
+                break;
+            case 'p':
+            case 'P':
+                this.pass();
+                break;
+            case 'a':
+            case 'A':
+                this.toggleAI();
+                break;
+            case 't':
+            case 'T':
+                this.tutorial.start();
+                break;
+            case 'ArrowLeft':
+                this.prevMove();
+                break;
+            case 'ArrowRight':
+                this.nextMove();
+                break;
+            case ' ':
+                if (this.reviewMode) {
+                    this.toggleAutoPlay();
+                    e.preventDefault();
+                }
+                break;
+        }
+    }
+    
+    updateMoveList() {
+        const moveListEl = document.getElementById('move-list');
+        if (!moveListEl) return;
+        
+        if (this.moveHistory.length === 0) {
+            moveListEl.classList.remove('active');
+            moveListEl.innerHTML = '';
+            return;
+        }
+        
+        moveListEl.classList.add('active');
+        let html = '';
+        
+        for (let i = 0; i < this.moveHistory.length; i++) {
+            const state = this.moveHistory[i];
+            const moveNum = i + 1;
+            const colLetter = String.fromCharCode(65 + state.move[1]);
+            const rowNum = state.move[0] + 1;
+            const colorClass = state.player === BLACK ? 'black' : 'white';
+            const currentClass = (this.reviewMode && i === this.reviewIndex) ? 'current' : '';
+            
+            html += `<span class="move-item ${colorClass} ${currentClass}" data-index="${i}">${moveNum}.${colLetter}${rowNum}</span>`;
+        }
+        
+        moveListEl.innerHTML = html;
+        
+        // 点击跳转到指定步
+        moveListEl.querySelectorAll('.move-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.dataset.index);
+                this.goToMove(index);
+            });
+        });
+    }
+    
+    goToMove(index) {
+        if (index < 0 || index >= this.moveHistory.length) return;
+        
+        this.enterReviewMode();
+        this.reviewIndex = index;
+        this.showReviewMove();
+        this.updateReviewButtons();
     }
     
     toggleSound() {
