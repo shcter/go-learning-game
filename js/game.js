@@ -1,11 +1,11 @@
-// 围棋游戏主模块
+// 围棋游戏主模块 - v2.0
 
 class GoGame {
     constructor() {
         this.currentBoard = this.createEmptyBoard();
         this.currentPlayer = BLACK;
         this.history = [];
-        this.moveHistory = [];  // 用于复盘
+        this.moveHistory = [];
         this.captured = { black: 0, white: 0 };
         this.showHints = true;
         this.consecutivePasses = 0;
@@ -13,23 +13,35 @@ class GoGame {
         // AI设置
         this.aiEnabled = false;
         this.aiDifficulty = AI_LEVEL.MEDIUM;
-        this.aiColor = WHITE;  // AI执白
+        this.aiColor = WHITE;
         this.isAIThinking = false;
         
         // 复盘设置
         this.reviewMode = false;
         this.reviewIndex = -1;
         this.autoPlayInterval = null;
-        this.autoPlaySpeed = 1000;  // ms
+        this.autoPlaySpeed = 1000;
         
         // 最后一手标记
         this.lastMove = null;
+        
+        // 统计
+        this.stats = this.loadStats();
+        this.currentGameMoves = 0;
+        
+        // 教程
+        this.tutorial = new Tutorial(this);
         
         // 初始化
         window.game = this;
         this.initUI();
         this.updateDisplay();
         redraw();
+        
+        // 检查是否需要显示教程
+        if (!localStorage.getItem('goTutorialCompleted')) {
+            setTimeout(() => this.tutorial.start(), 500);
+        }
     }
     
     createEmptyBoard() {
@@ -47,6 +59,9 @@ class GoGame {
         const nextBtn = document.getElementById('next-btn');
         const speedSelect = document.getElementById('speed-select');
         const difficultySelect = document.getElementById('difficulty-select');
+        const soundBtn = document.getElementById('sound-btn');
+        const tutorialBtn = document.getElementById('tutorial-btn');
+        const statsBtn = document.getElementById('stats-btn');
         
         if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
         if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
@@ -61,10 +76,17 @@ class GoGame {
         });
         if (difficultySelect) difficultySelect.addEventListener('change', (e) => {
             this.aiDifficulty = e.target.value;
+            if (this.aiEnabled) {
+                this.showMessage(`AI难度已调整为：${this.getDifficultyText()}`);
+            }
         });
+        if (soundBtn) soundBtn.addEventListener('click', () => this.toggleSound());
+        if (tutorialBtn) tutorialBtn.addEventListener('click', () => this.tutorial.start());
+        if (statsBtn) statsBtn.addEventListener('click', () => this.showStats());
         
         this.updateAIButton();
         this.updateReviewButtons();
+        this.updateSoundButton();
     }
     
     handleMove(row, col) {
@@ -78,6 +100,7 @@ class GoGame {
         
         if (!result.success) {
             this.showMessage(result.reason);
+            audioManager.playInvalidMove();
             return;
         }
         
@@ -89,7 +112,6 @@ class GoGame {
             captured: [...result.captured]
         });
         
-        // 保存历史状态
         this.history.push({
             board: this.currentBoard.map(r => [...r]),
             player: this.currentPlayer,
@@ -100,6 +122,7 @@ class GoGame {
         this.currentBoard = result.board;
         this.consecutivePasses = 0;
         this.lastMove = { row, col };
+        this.currentGameMoves++;
         
         // 更新提子数
         if (result.captured.length > 0) {
@@ -108,16 +131,17 @@ class GoGame {
             } else {
                 this.captured.black += result.captured.length;
             }
+            audioManager.playStoneCapture();
+        } else {
+            audioManager.playStonePlace();
         }
         
-        // 切换玩家
         this.currentPlayer = this.currentPlayer === BLACK ? WHITE : BLACK;
         
         this.updateDisplay();
         redraw();
         this.showMessage('');
         
-        // AI回合
         if (this.aiEnabled && this.currentPlayer === this.aiColor && !this.gameOver) {
             this.triggerAI();
         }
@@ -126,6 +150,7 @@ class GoGame {
     triggerAI() {
         this.isAIThinking = true;
         this.showMessage('🤖 AI思考中...');
+        this.updateDisplay();
         
         setTimeout(() => {
             const move = getAIMove(this.currentBoard, this.aiColor, this.aiDifficulty);
@@ -145,14 +170,12 @@ class GoGame {
             return;
         }
         
-        // 悔棋两次（己方+AI）
         for (let i = 0; i < (this.aiEnabled ? 2 : 1); i++) {
             if (this.history.length === 0) break;
             
             const lastState = this.history.pop();
             this.moveHistory.pop();
             
-            // 重建棋盘
             this.currentBoard = this.createEmptyBoard();
             for (const state of this.history) {
                 const [r, c] = state.move;
@@ -162,7 +185,6 @@ class GoGame {
                 }
             }
             
-            // 恢复提子计数
             this.captured = { black: 0, white: 0 };
             for (const state of this.history) {
                 const color = state.player === BLACK ? 'white' : 'black';
@@ -177,6 +199,7 @@ class GoGame {
             ? { row: this.moveHistory[this.moveHistory.length - 1].move[0], 
                 col: this.moveHistory[this.moveHistory.length - 1].move[1] }
             : null;
+        this.currentGameMoves = Math.max(0, this.currentGameMoves - 2);
         
         this.updateDisplay();
         redraw();
@@ -197,6 +220,8 @@ class GoGame {
         this.lastMove = null;
         this.reviewMode = false;
         this.reviewIndex = -1;
+        this.gameOver = false;
+        this.currentGameMoves = 0;
         this.stopAutoPlay();
         
         this.updateDisplay();
@@ -218,7 +243,6 @@ class GoGame {
         redraw();
         this.showMessage(this.currentPlayer === BLACK ? '黑方 Pass' : '白方 Pass');
         
-        // AI回合
         if (this.aiEnabled && this.currentPlayer === this.aiColor) {
             this.triggerAI();
         }
@@ -229,28 +253,76 @@ class GoGame {
         const totalBlack = counts.black + this.captured.black;
         const totalWhite = counts.white + this.captured.white;
         
-        let result;
+        let winner, result;
         if (totalBlack > totalWhite + 6.5) {
+            winner = '黑方';
             result = `黑方胜！${totalBlack.toFixed(1)} vs ${totalWhite.toFixed(1)}`;
         } else if (totalWhite > totalBlack + 6.5) {
+            winner = '白方';
             result = `白方胜！${totalWhite.toFixed(1)} vs ${totalBlack.toFixed(1)}`;
         } else {
+            winner = '平局';
             result = `和棋！黑:${totalBlack.toFixed(1)} 白:${totalWhite.toFixed(1)}`;
         }
         
         this.showMessage(`游戏结束！${result}`);
+        audioManager.playGameEnd();
+        
+        // 更新统计
+        this.updateStats(winner);
         this.gameOver = true;
     }
     
-    // AI切换
+    updateStats(winner) {
+        if (this.aiEnabled) {
+            const aiWinner = winner === '白方' ? 'AI' : '玩家';
+            this.stats.vsAI = this.stats.vsAI || { wins: 0, losses: 0 };
+            if (winner === '黑方' || winner === '白方') {
+                if (aiWinner === '玩家') {
+                    this.stats.vsAI.wins++;
+                } else {
+                    this.stats.vsAI.losses++;
+                }
+            }
+        }
+        this.stats.totalGames = (this.stats.totalGames || 0) + 1;
+        this.stats.totalMoves = (this.stats.totalMoves || 0) + this.currentGameMoves;
+        this.saveStats();
+    }
+    
+    loadStats() {
+        try {
+            const saved = localStorage.getItem('goStats');
+            return saved ? JSON.parse(saved) : {};
+        } catch (e) {
+            return {};
+        }
+    }
+    
+    saveStats() {
+        try {
+            localStorage.setItem('goStats', JSON.stringify(this.stats));
+        } catch (e) {
+            // Ignore
+        }
+    }
+    
+    showStats() {
+        const total = this.stats.totalGames || 0;
+        const moves = this.stats.totalMoves || 0;
+        const avgMoves = total > 0 ? (moves / total).toFixed(1) : 0;
+        const vsAI = this.stats.vsAI || { wins: 0, losses: 0 };
+        
+        alert(`📊 游戏统计\n\n总对局：${total}局\n总手数：${moves}手\n平均手数：${avgMoves}手\n\nAI对战：\n  胜：${vsAI.wins}局\n  负：${vsAI.losses}局`);
+    }
+    
     toggleAI() {
         this.aiEnabled = !this.aiEnabled;
         
         if (this.aiEnabled) {
-            this.aiColor = WHITE;  // AI执白
+            this.aiColor = WHITE;
             this.showMessage(`🤖 AI已开启（${this.getDifficultyText()}）`);
             
-            // 如果是黑方先手，AI立即落子
             if (this.currentPlayer === WHITE && this.history.length === 0) {
                 this.triggerAI();
             }
@@ -283,7 +355,6 @@ class GoGame {
         }
     }
     
-    // 复盘功能
     toggleReview() {
         if (this.reviewMode) {
             this.exitReviewMode();
@@ -325,7 +396,6 @@ class GoGame {
         
         redraw();
         
-        // 更新复盘信息
         const reviewInfo = document.getElementById('review-info');
         if (reviewInfo) {
             const moveNum = this.reviewIndex + 1;
@@ -408,6 +478,19 @@ class GoGame {
         }
     }
     
+    toggleSound() {
+        const enabled = audioManager.toggle();
+        this.updateSoundButton();
+        this.showMessage(enabled ? '音效已开启' : '音效已关闭');
+    }
+    
+    updateSoundButton() {
+        const soundBtn = document.getElementById('sound-btn');
+        if (soundBtn) {
+            soundBtn.textContent = audioManager.enabled ? '🔊 音效' : '🔇 静音';
+        }
+    }
+    
     updateDisplay() {
         const playerSpan = document.getElementById('current-player');
         if (playerSpan) {
@@ -438,11 +521,12 @@ class GoGame {
     }
 }
 
-// 启动游戏
 function init() {
     console.log('init() called - starting game initialization');
     
     try {
+        audioManager.init();
+        
         const boardInitialized = initBoard();
         console.log('initBoard result:', boardInitialized);
         
@@ -454,18 +538,14 @@ function init() {
         
         new GoGame();
         console.log('GoGame instance created successfully');
-        console.log('围棋游戏初始化成功');
     } catch (e) {
         console.error('初始化失败:', e);
         alert('初始化失败: ' + e.message);
     }
 }
 
-// 确保 DOM 加载完成
 if (document.readyState === 'loading') {
-    console.log('DOM still loading, adding DOMContentLoaded listener');
     document.addEventListener('DOMContentLoaded', init);
 } else {
-    console.log('DOM already ready, calling init() directly');
     init();
 }

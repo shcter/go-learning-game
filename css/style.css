@@ -155,6 +155,90 @@ h1 {
     font-size: 0.9rem;
 }
 
+/* Tutorial Overlay */
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.tutorial-box {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    padding: 30px 40px;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.tutorial-progress {
+    color: #888;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+}
+
+.tutorial-box h2 {
+    color: #fbbf24;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.tutorial-box p {
+    color: #ccc;
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+
+.tutorial-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.tutorial-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tutorial-btn.prev {
+    background: #4a5568;
+    color: #fff;
+}
+
+.tutorial-btn.next, .tutorial-btn.start {
+    background: #22c55e;
+    color: #fff;
+}
+
+.tutorial-btn:hover {
+    transform: translateY(-2px);
+}
+
+.tutorial-skip {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.tutorial-skip:hover {
+    color: #999;
+}
+
 select {
     padding: 6px 12px;
     border: none;
