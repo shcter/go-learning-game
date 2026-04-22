@@ -13,6 +13,8 @@ class GoGame {
         this.showHints = true;
         this.consecutivePasses = 0;
         
+        // 重要：先设置 window.game，再调用其他初始化
+        window.game = this;
         this.initUI();
         this.updateDisplay();
         redraw();
@@ -23,11 +25,13 @@ class GoGame {
     }
     
     initUI() {
-        document.getElementById('undo-btn').addEventListener('click', () => this.undo());
-        document.getElementById('reset-btn').addEventListener('click', () => this.reset());
-        document.getElementById('pass-btn').addEventListener('click', () => this.pass());
+        const undoBtn = document.getElementById('undo-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const passBtn = document.getElementById('pass-btn');
         
-        window.game = this;
+        if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
+        if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
+        if (passBtn) passBtn.addEventListener('click', () => this.pass());
     }
     
     handleMove(row, col) {
@@ -40,10 +44,10 @@ class GoGame {
         
         // 保存历史
         this.history.push({
-            board: this.currentBoard,
+            board: this.currentBoard.map(r => [...r]),
             player: this.currentPlayer,
             move: [row, col],
-            captured: this.captured[this.currentPlayer === BLACK ? 'white' : 'black']
+            capturedCount: this.captured[this.currentPlayer === BLACK ? 'white' : 'black']
         });
         
         this.currentBoard = result.board;
@@ -52,9 +56,9 @@ class GoGame {
         // 更新提子数
         if (result.captured.length > 0) {
             if (this.currentPlayer === BLACK) {
-                this.captured.black += result.captured.length;
-            } else {
                 this.captured.white += result.captured.length;
+            } else {
+                this.captured.black += result.captured.length;
             }
         }
         
@@ -73,9 +77,9 @@ class GoGame {
         }
         
         const lastState = this.history.pop();
-        this.currentBoard = this.createEmptyBoard();
         
-        // 重新应用历史（除了最后一手）
+        // 重建棋盘
+        this.currentBoard = this.createEmptyBoard();
         for (const state of this.history) {
             const [r, c] = state.move;
             const result = makeMove(this.currentBoard, r, c, state.player);
@@ -85,9 +89,11 @@ class GoGame {
         }
         
         // 恢复提子计数
-        const lastPlayer = lastState.player;
-        const opponent = lastPlayer === BLACK ? WHITE : BLACK;
-        this.captured[opponent === BLACK ? 'black' : 'white'] -= lastState.captured;
+        this.captured = { black: 0, white: 0 };
+        for (const state of this.history) {
+            const color = state.player === BLACK ? 'white' : 'black';
+            this.captured[color] = state.capturedCount;
+        }
         
         this.currentPlayer = lastState.player;
         this.consecutivePasses = 0;
@@ -136,23 +142,41 @@ class GoGame {
     
     updateDisplay() {
         const playerSpan = document.getElementById('current-player');
-        playerSpan.textContent = `当前回合：${this.currentPlayer === BLACK ? '⚫ 黑方' : '⚪ 白方'}`;
+        if (playerSpan) {
+            playerSpan.textContent = `当前回合：${this.currentPlayer === BLACK ? '⚫ 黑方' : '⚪ 白方'}`;
+        }
         
         const capturedSpan = document.getElementById('captured-stones');
-        capturedSpan.textContent = `提子：黑 ${this.captured.black} / 白 ${this.captured.white}`;
+        if (capturedSpan) {
+            capturedSpan.textContent = `提子：黑 ${this.captured.black} / 白 ${this.captured.white}`;
+        }
         
         const undoBtn = document.getElementById('undo-btn');
-        undoBtn.disabled = this.history.length === 0;
+        if (undoBtn) {
+            undoBtn.disabled = this.history.length === 0;
+        }
     }
     
     showMessage(text) {
         const msgEl = document.getElementById('message');
-        msgEl.textContent = text;
+        if (msgEl) msgEl.textContent = text;
     }
 }
 
-// 启动游戏
-document.addEventListener('DOMContentLoaded', () => {
-    initBoard();
-    new GoGame();
-});
+// 页面加载完成后初始化
+function init() {
+    try {
+        initBoard();
+        new GoGame();
+        console.log('围棋游戏初始化成功');
+    } catch (e) {
+        console.error('初始化失败:', e);
+    }
+}
+
+// 确保 DOM 加载完成
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
