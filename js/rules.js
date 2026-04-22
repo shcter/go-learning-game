@@ -1,10 +1,5 @@
 // 围棋规则判断模块
 
-const EMPTY = 0;
-const BLACK = 1;
-const WHITE = 2;
-const BOARD_SIZE = 9;
-
 // 复制棋盘状态
 function copyBoard(board) {
     return board.map(row => [...row]);

@@ -1,9 +1,5 @@
 // 围棋游戏主模块
 
-const BLACK = 1;
-const WHITE = 2;
-const BOARD_SIZE = 9;
-
 // AI难度
 const AI_LEVEL = {
     EASY: 'easy',

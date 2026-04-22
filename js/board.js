@@ -1,6 +1,5 @@
 // 棋盘渲染模块
 
-const BOARD_SIZE = 9;
 const CELL_SIZE = 50;
 const PADDING = 30;
 const STONE_RADIUS = 20;
