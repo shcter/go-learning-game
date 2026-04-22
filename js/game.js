@@ -32,6 +32,9 @@ class GoGame {
         // 教程
         this.tutorial = new Tutorial(this);
         
+        // 死活题
+        this.tsumego = new Tsumego(this);
+        
         // 初始化
         window.game = this;
         this.initUI();
@@ -62,6 +65,7 @@ class GoGame {
         const soundBtn = document.getElementById('sound-btn');
         const tutorialBtn = document.getElementById('tutorial-btn');
         const statsBtn = document.getElementById('stats-btn');
+        const tsumegoBtn = document.getElementById('tsumego-btn');
         
         if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
         if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
@@ -83,6 +87,7 @@ class GoGame {
         if (soundBtn) soundBtn.addEventListener('click', () => this.toggleSound());
         if (tutorialBtn) tutorialBtn.addEventListener('click', () => this.tutorial.start());
         if (statsBtn) statsBtn.addEventListener('click', () => this.showStats());
+        if (tsumegoBtn) tsumegoBtn.addEventListener('click', () => this.startTsumego());
         
         this.updateAIButton();
         this.updateReviewButtons();
@@ -314,6 +319,11 @@ class GoGame {
         const vsAI = this.stats.vsAI || { wins: 0, losses: 0 };
         
         alert(`📊 游戏统计\n\n总对局：${total}局\n总手数：${moves}手\n平均手数：${avgMoves}手\n\nAI对战：\n  胜：${vsAI.wins}局\n  负：${vsAI.losses}局`);
+    }
+    
+    startTsumego() {
+        const level = this.aiDifficulty || AI_LEVEL.EASY;
+        this.tsumego.start(level);
     }
     
     toggleAI() {

@@ -96,10 +96,37 @@ function drawBoard() {
         ctx.fill();
     }
     
+    // 绘制坐标标签
+    drawCoordinates();
+    
     // 绘制提示
     drawHints();
     
     console.log('Grid lines drawn');
+}
+
+function drawCoordinates() {
+    if (!ctx) return;
+    
+    ctx.fillStyle = '#5c4033';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 列标签 (A-I)
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        const x = PADDING + i * CELL_SIZE;
+        const y = PADDING - 12;
+        ctx.fillText(String.fromCharCode(65 + i), x, y);
+    }
+    
+    // 行标签 (1-9)
+    ctx.textAlign = 'right';
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        const x = PADDING - 8;
+        const y = PADDING + i * CELL_SIZE;
+        ctx.fillText(String(BOARD_SIZE - i), x, y);
+    }
 }
 
 function drawHints() {
