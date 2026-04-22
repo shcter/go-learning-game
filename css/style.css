@@ -1,0 +1,105 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #fff;
+}
+
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.game-controls {
+    margin-bottom: 15px;
+}
+
+.game-controls button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 8px;
+    background: #4a5568;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.game-controls button:hover:not(:disabled) {
+    background: #6b7280;
+}
+
+.game-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.board-container {
+    display: inline-block;
+    background: #deb887;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+#go-board {
+    display: block;
+    cursor: pointer;
+}
+
+.message {
+    margin-top: 15px;
+    min-height: 24px;
+    font-size: 1rem;
+    color: #fbbf24;
+}
+
+.legend {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.legend span {
+    margin: 0 10px;
+}
+
+.hint-possible {
+    color: #4ade80;
+}
+
+.hint-capture {
+    color: #f87171;
+}

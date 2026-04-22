@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>围棋学习游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 围棋学习游戏</h1>
+        <p class="subtitle">9×9 棋盘 · 入门级</p>
+        
+        <div class="game-info">
+            <span id="current-player">当前回合：⚫ 黑方</span>
+            <span id="captured-stones">提子：黑 0 / 白 0</span>
+        </div>
+        
+        <div class="game-controls">
+            <button id="undo-btn" disabled>🔙 悔棋</button>
+            <button id="reset-btn">🔄 重新开始</button>
+            <button id="pass-btn">⏭️ 弃权</button>
+        </div>
+        
+        <div class="board-container">
+            <canvas id="go-board"></canvas>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="legend">
+            <span>⚫ 黑子</span>
+            <span>⚪ 白子</span>
+            <span class="hint-possible">○ 合法落子</span>
+            <span class="hint-capture">✕ 提子提示</span>
+        </div>
+    </div>
+    
+    <script src="js/rules.js"></script>
+    <script src="js/board.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
