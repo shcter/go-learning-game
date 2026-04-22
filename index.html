@@ -20,6 +20,18 @@
             <button id="undo-btn" disabled>🔙 悔棋</button>
             <button id="reset-btn">🔄 重新开始</button>
             <button id="pass-btn">⏭️ 弃权</button>
+            <button id="ai-btn">🤖 AI：关</button>
+        </div>
+        
+        <div class="game-controls">
+            <div id="difficulty-div" class="difficulty-select" style="display: none;">
+                <label for="difficulty-select">难度：</label>
+                <select id="difficulty-select">
+                    <option value="easy">简单</option>
+                    <option value="medium" selected>中等</option>
+                    <option value="hard">困难</option>
+                </select>
+            </div>
         </div>
         
         <div class="board-container">
@@ -32,12 +44,30 @@
             <span>⚫ 黑子</span>
             <span>⚪ 白子</span>
             <span class="hint-possible">○ 合法落子</span>
-            <span class="hint-capture">✕ 提子提示</span>
+            <span class="last-move">● 最后一手</span>
+        </div>
+        
+        <!-- 复盘功能区 -->
+        <div class="review-section">
+            <h3>📋 棋谱复盘</h3>
+            <div class="game-controls">
+                <button id="review-btn" disabled>📋 复盘</button>
+                <button id="prev-btn" disabled>◀️ 上一步</button>
+                <button id="next-btn" disabled>▶️ 下一步</button>
+                <button id="auto-play-btn" style="display: none;">▶️ 播放</button>
+                <select id="speed-select" style="display: none;">
+                    <option value="2000">慢速</option>
+                    <option value="1000" selected>中速</option>
+                    <option value="500">快速</option>
+                </select>
+            </div>
+            <div id="review-info" class="review-info"></div>
         </div>
     </div>
     
     <script src="js/rules.js"></script>
     <script src="js/board.js"></script>
+    <script src="js/ai.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>

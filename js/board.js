@@ -27,7 +27,6 @@ function initBoard() {
     canvas.width = size;
     canvas.height = size;
     
-    // 移除旧事件监听器（防止重复绑定）
     canvas.removeEventListener('click', handleBoardClick);
     canvas.addEventListener('click', handleBoardClick);
     
@@ -40,10 +39,9 @@ function drawBoard() {
     const width = canvas.width;
     const height = canvas.height;
     
-    // 清除画布
     ctx.clearRect(0, 0, width, height);
     
-    // 绘制棋盘背景（木纹色）
+    // 绘制棋盘背景
     ctx.fillStyle = '#deb887';
     ctx.fillRect(0, 0, width, height);
     
@@ -56,13 +54,11 @@ function drawBoard() {
     for (let i = 0; i < BOARD_SIZE; i++) {
         const pos = PADDING + i * CELL_SIZE;
         
-        // 横线
         ctx.beginPath();
         ctx.moveTo(PADDING, pos);
         ctx.lineTo(PADDING + boardSize, pos);
         ctx.stroke();
         
-        // 竖线
         ctx.beginPath();
         ctx.moveTo(pos, PADDING);
         ctx.lineTo(pos, PADDING + boardSize);
@@ -82,7 +78,7 @@ function drawBoard() {
 }
 
 function drawHints() {
-    if (!window.game || !window.game.showHints) return;
+    if (!window.game || !window.game.showHints || window.game.reviewMode) return;
     
     const { currentBoard, currentPlayer } = window.game;
     
@@ -104,7 +100,7 @@ function drawHints() {
                         ctx.stroke();
                     }
                 } catch (e) {
-                    // 忽略验证错误
+                    // 忽略
                 }
             }
         }
@@ -139,10 +135,10 @@ function drawStone(col, row, color) {
     
     // 棋子主体
     const gradient = ctx.createRadialGradient(x - 5, y - 5, 0, x, y, STONE_RADIUS);
-    if (color === 1) { // 黑子
+    if (color === 1) {
         gradient.addColorStop(0, '#4a4a4a');
         gradient.addColorStop(1, '#1a1a1a');
-    } else { // 白子
+    } else {
         gradient.addColorStop(0, '#ffffff');
         gradient.addColorStop(1, '#d0d0d0');
     }
@@ -159,8 +155,27 @@ function drawStone(col, row, color) {
     ctx.fill();
 }
 
+function drawLastMoveMarker(row, col) {
+    if (!ctx || !window.game || !window.game.lastMove) return;
+    
+    const x = PADDING + col * CELL_SIZE;
+    const y = PADDING + row * CELL_SIZE;
+    
+    // 最后一手红点标记
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#ef4444';
+    ctx.fill();
+    
+    // 白色边框
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
 function handleBoardClick(event) {
     if (!window.game || !canvas) return;
+    if (window.game.reviewMode) return;  // 复盘模式不响应点击
     
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -181,8 +196,12 @@ function redraw() {
     drawBoard();
     if (window.game) {
         drawStones(window.game.currentBoard);
+        
+        // 绘制最后一手标记
+        if (window.game.lastMove && !window.game.reviewMode) {
+            drawLastMoveMarker(window.game.lastMove.row, window.game.lastMove.col);
+        }
     }
 }
 
-// 导出给外部使用
 window.redraw = redraw;
