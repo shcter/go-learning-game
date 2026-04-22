@@ -1,12 +1,5 @@
 // 围棋游戏主模块
 
-// AI难度
-const AI_LEVEL = {
-    EASY: 'easy',
-    MEDIUM: 'medium',
-    HARD: 'hard'
-};
-
 class GoGame {
     constructor() {
         this.currentBoard = this.createEmptyBoard();

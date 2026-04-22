@@ -1,6 +1,4 @@
 // 围棋AI模块
-
-// AI难度等级
 const AI_LEVEL = {
     EASY: 'easy',
     MEDIUM: 'medium', 
