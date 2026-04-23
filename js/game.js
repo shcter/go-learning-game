@@ -35,6 +35,9 @@ class GoGame {
         // 死活题
         this.tsumego = new Tsumego(this);
         
+        // 分析
+        this.analysis = new GameAnalysis(this);
+        
         // 初始化
         window.game = this;
         this.initUI();
@@ -68,6 +71,7 @@ class GoGame {
         const tsumegoBtn = document.getElementById('tsumego-btn');
         const saveBtn = document.getElementById('save-btn');
         const loadBtn = document.getElementById('load-btn');
+        const analysisBtn = document.getElementById('analysis-btn');
         
         if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
         if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
@@ -92,6 +96,7 @@ class GoGame {
         if (tsumegoBtn) tsumegoBtn.addEventListener('click', () => this.startTsumego());
         if (saveBtn) saveBtn.addEventListener('click', () => this.saveGame());
         if (loadBtn) loadBtn.addEventListener('click', () => this.loadGame());
+        if (analysisBtn) analysisBtn.addEventListener('click', () => this.toggleAnalysis());
         
         // 键盘快捷键
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -152,6 +157,7 @@ class GoGame {
         
         this.updateDisplay();
         this.updateMoveList();
+        this.updateAnalysis();
         redraw();
         this.showMessage('');
         
@@ -665,6 +671,58 @@ class GoGame {
         const enabled = audioManager.toggle();
         this.updateSoundButton();
         this.showMessage(enabled ? '音效已开启' : '音效已关闭');
+    }
+    
+    toggleAnalysis() {
+        const content = document.getElementById('analysis-content');
+        if (!content) return;
+        
+        const isVisible = content.style.display !== 'none';
+        content.style.display = isVisible ? 'none' : 'block';
+        
+        if (!isVisible) {
+            this.updateAnalysis();
+        }
+    }
+    
+    updateAnalysis() {
+        const analysis = this.analysis.analyze();
+        
+        // 更新棋子统计
+        const stoneCount = document.getElementById('stone-count');
+        if (stoneCount) {
+            stoneCount.textContent = `黑: ${analysis.stones.black} | 白: ${analysis.stones.white}`;
+        }
+        
+        // 更新领土
+        const territory = document.getElementById('territory');
+        if (territory) {
+            territory.textContent = `黑: ${analysis.territories.black}目 | 白: ${analysis.territories.white}目`;
+        }
+        
+        // 更新胜率
+        const winProb = this.analysis.getWinProbability();
+        const blackProbBar = document.getElementById('black-prob-bar');
+        const whiteProbBar = document.getElementById('white-prob-bar');
+        const probText = document.getElementById('prob-text');
+        
+        if (blackProbBar && whiteProbBar && probText) {
+            blackProbBar.style.width = winProb.black + '%';
+            whiteProbBar.style.width = winProb.white + '%';
+            probText.textContent = `黑 ${winProb.black}% - ${winProb.white}% 白`;
+        }
+        
+        // 更新威胁
+        const threatsEl = document.getElementById('threats');
+        if (threatsEl) {
+            if (analysis.threats.length > 0) {
+                threatsEl.innerHTML = analysis.threats.map(t => 
+                    `<div class="threat-item ${t.type}">${t.message}</div>`
+                ).join('');
+            } else {
+                threatsEl.innerHTML = '';
+            }
+        }
     }
     
     updateSoundButton() {

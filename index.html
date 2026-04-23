@@ -53,6 +53,34 @@
             <span class="last-move">● 最后一手</span>
         </div>
         
+        <!-- 分析面板 -->
+        <div id="analysis-panel" class="analysis-panel">
+            <div class="analysis-toggle">
+                <button id="analysis-btn">📈 对局分析</button>
+            </div>
+            <div id="analysis-content" class="analysis-content" style="display:none;">
+                <div class="analysis-section">
+                    <h4>棋子统计</h4>
+                    <div id="stone-count">黑: 0 | 白: 0</div>
+                </div>
+                <div class="analysis-section">
+                    <h4>预判领土</h4>
+                    <div id="territory">黑: 0目 | 白: 0目</div>
+                </div>
+                <div class="analysis-section">
+                    <h4>胜率评估</h4>
+                    <div id="win-prob" class="win-prob">
+                        <div class="prob-bar">
+                            <div id="black-prob-bar" class="prob-fill black"></div>
+                            <div id="white-prob-bar" class="prob-fill white"></div>
+                        </div>
+                        <span id="prob-text">黑 50% - 50% 白</span>
+                    </div>
+                </div>
+                <div id="threats" class="threats"></div>
+            </div>
+        </div>
+        
         <!-- 复盘功能区 -->
         <div class="review-section">
             <h3>📋 棋谱复盘</h3>
@@ -79,6 +107,7 @@
     <script src="js/audio.js"></script>
     <script src="js/tutorial.js"></script>
     <script src="js/tsumego.js"></script>
+    <script src="js/analysis.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>
