@@ -38,6 +38,9 @@ class GoGame {
         // 分析
         this.analysis = new GameAnalysis(this);
         
+        // SGF导出
+        this.sgfExporter = new SGFExporter(this);
+        
         // 初始化
         window.game = this;
         this.initUI();
@@ -72,6 +75,7 @@ class GoGame {
         const saveBtn = document.getElementById('save-btn');
         const loadBtn = document.getElementById('load-btn');
         const analysisBtn = document.getElementById('analysis-btn');
+        const exportBtn = document.getElementById('export-btn');
         
         if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
         if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
@@ -97,6 +101,7 @@ class GoGame {
         if (saveBtn) saveBtn.addEventListener('click', () => this.saveGame());
         if (loadBtn) loadBtn.addEventListener('click', () => this.loadGame());
         if (analysisBtn) analysisBtn.addEventListener('click', () => this.toggleAnalysis());
+        if (exportBtn) exportBtn.addEventListener('click', () => this.exportGame());
         
         // 键盘快捷键
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
