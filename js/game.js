@@ -66,6 +66,8 @@ class GoGame {
         const tutorialBtn = document.getElementById('tutorial-btn');
         const statsBtn = document.getElementById('stats-btn');
         const tsumegoBtn = document.getElementById('tsumego-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const loadBtn = document.getElementById('load-btn');
         
         if (undoBtn) undoBtn.addEventListener('click', () => this.undo());
         if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
@@ -88,6 +90,8 @@ class GoGame {
         if (tutorialBtn) tutorialBtn.addEventListener('click', () => this.tutorial.start());
         if (statsBtn) statsBtn.addEventListener('click', () => this.showStats());
         if (tsumegoBtn) tsumegoBtn.addEventListener('click', () => this.startTsumego());
+        if (saveBtn) saveBtn.addEventListener('click', () => this.saveGame());
+        if (loadBtn) loadBtn.addEventListener('click', () => this.loadGame());
         
         // 键盘快捷键
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -519,6 +523,20 @@ class GoGame {
             case 'T':
                 this.tutorial.start();
                 break;
+            case 's':
+            case 'S':
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    this.saveGame();
+                }
+                break;
+            case 'l':
+            case 'L':
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    this.loadGame();
+                }
+                break;
             case 'ArrowLeft':
                 this.prevMove();
                 break;
@@ -576,6 +594,71 @@ class GoGame {
         this.reviewIndex = index;
         this.showReviewMove();
         this.updateReviewButtons();
+    }
+    
+    saveGame() {
+        const gameState = {
+            currentBoard: this.currentBoard,
+            currentPlayer: this.currentPlayer,
+            history: this.history,
+            moveHistory: this.moveHistory,
+            captured: this.captured,
+            lastMove: this.lastMove,
+            aiEnabled: this.aiEnabled,
+            aiDifficulty: this.aiDifficulty,
+            consecutivePasses: this.consecutivePasses,
+            currentGameMoves: this.currentGameMoves
+        };
+        
+        try {
+            localStorage.setItem('goSavedGame', JSON.stringify(gameState));
+            this.showMessage('游戏已保存');
+            return true;
+        } catch (e) {
+            this.showMessage('保存失败');
+            return false;
+        }
+    }
+    
+    loadGame() {
+        try {
+            const saved = localStorage.getItem('goSavedGame');
+            if (!saved) {
+                this.showMessage('没有保存的游戏');
+                return false;
+            }
+            
+            const gameState = JSON.parse(saved);
+            
+            if (!confirm('加载游戏将丢失当前进度，确定继续？')) {
+                return false;
+            }
+            
+            this.currentBoard = gameState.currentBoard;
+            this.currentPlayer = gameState.currentPlayer;
+            this.history = gameState.history;
+            this.moveHistory = gameState.moveHistory;
+            this.captured = gameState.captured;
+            this.lastMove = gameState.lastMove;
+            this.aiEnabled = gameState.aiEnabled || false;
+            this.aiDifficulty = gameState.aiDifficulty || AI_LEVEL.MEDIUM;
+            this.consecutivePasses = gameState.consecutivePasses || 0;
+            this.currentGameMoves = gameState.currentGameMoves || 0;
+            this.gameOver = false;
+            this.reviewMode = false;
+            this.reviewIndex = -1;
+            
+            this.updateDisplay();
+            this.updateMoveList();
+            this.updateAIButton();
+            redraw();
+            
+            this.showMessage('游戏已加载');
+            return true;
+        } catch (e) {
+            this.showMessage('加载失败');
+            return false;
+        }
     }
     
     toggleSound() {

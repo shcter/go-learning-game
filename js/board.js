@@ -40,6 +40,11 @@ function initBoard() {
     // 移除旧事件监听器并添加新的
     canvas.removeEventListener('click', handleBoardClick);
     canvas.addEventListener('click', handleBoardClick);
+    canvas.addEventListener('mousemove', handleBoardHover);
+    canvas.addEventListener('mouseleave', () => {
+        hoverPos = null;
+        redraw();
+    });
     
     // 初始绘制
     drawBoard();
@@ -227,6 +232,75 @@ function drawLastMoveMarker(row, col) {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.stroke();
+}
+
+// 悬停效果
+let hoverPos = null;
+
+function drawHoverStone(row, col) {
+    if (!ctx || !window.game || window.game.reviewMode) return;
+    
+    const { currentBoard, currentPlayer, showHints } = window.game;
+    if (currentBoard[row][col] !== 0) return;
+    
+    // 检查是否是合法落点
+    try {
+        const validation = isValidMove(currentBoard, row, col, currentPlayer, true);
+        if (!validation.valid) return;
+    } catch (e) {
+        return;
+    }
+    
+    const x = PADDING + col * CELL_SIZE;
+    const y = PADDING + row * CELL_SIZE;
+    
+    ctx.globalAlpha = 0.5;
+    
+    // 绘制半透明棋子
+    const gradient = ctx.createRadialGradient(x - 5, y - 5, 0, x, y, STONE_RADIUS);
+    if (currentPlayer === BLACK) {
+        gradient.addColorStop(0, 'rgba(74, 74, 74, 0.7)');
+        gradient.addColorStop(1, 'rgba(26, 26, 26, 0.7)');
+    } else {
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+        gradient.addColorStop(1, 'rgba(208, 208, 208, 0.7)');
+    }
+    
+    ctx.beginPath();
+    ctx.arc(x, y, STONE_RADIUS, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    ctx.globalAlpha = 1;
+}
+
+function handleBoardHover(event) {
+    if (!window.game || !canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+    
+    const col = Math.round((x - PADDING) / CELL_SIZE);
+    const row = Math.round((y - PADDING) / CELL_SIZE);
+    
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+        if (!hoverPos || hoverPos.row !== row || hoverPos.col !== col) {
+            hoverPos = { row, col };
+            redraw();
+            if (!window.game.reviewMode && window.game.currentBoard[row][col] === 0) {
+                drawHoverStone(row, col);
+            }
+        }
+    } else {
+        if (hoverPos) {
+            hoverPos = null;
+            redraw();
+        }
+    }
 }
 
 function handleBoardClick(event) {
