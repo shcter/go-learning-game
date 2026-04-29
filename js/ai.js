@@ -1,10 +1,4 @@
 // 围棋AI模块
-const AI_LEVEL = {
-    EASY: 'easy',
-    MEDIUM: 'medium', 
-    HARD: 'hard'
-};
-
 // 获取所有合法落子位置
 function getAllValidMoves(board, color) {
     const moves = [];
